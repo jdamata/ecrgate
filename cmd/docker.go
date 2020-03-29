@@ -16,7 +16,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-//writes from the build response to the log
+//dockerLogOutput: Formats docker output and displays to terminal
 func dockerLogOutput(reader io.ReadCloser) {
 	defer reader.Close()
 	termFd, isTerm := term.GetFdInfo(os.Stderr)
@@ -26,7 +26,7 @@ func dockerLogOutput(reader io.ReadCloser) {
 	}
 }
 
-// DockerBuild - builds and tags a docker image
+// dockerBuild: builds and tags a docker image
 func dockerBuild(ctx context.Context, docker *client.Client, image string) {
 	dockerfile := viper.GetString("dockerfile")
 	// Docker build config
@@ -47,7 +47,7 @@ func dockerBuild(ctx context.Context, docker *client.Client, image string) {
 	dockerLogOutput(out.Body)
 }
 
-// DockerPush - pushes an image to the ECR repo
+// dockerPush: pushes an image to the ECR repo
 func dockerPush(ctx context.Context, docker *client.Client, svc *ecr.ECR, ecrToken string, imageDest string) {
 	// Push docker image
 	log.Info("Pushing image: ", imageDest)

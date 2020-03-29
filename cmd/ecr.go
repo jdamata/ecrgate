@@ -56,13 +56,13 @@ func createRepo(svc *ecr.ECR, ecrRepo string) {
 	}
 }
 
+// ecrCreds: Generate docker AuthStr for authentication
 func ecrCreds(svc *ecr.ECR, image string) (string, string) {
 	// Get ECR docker credential
 	tokenOutput, err := svc.GetAuthorizationToken(&ecr.GetAuthorizationTokenInput{})
 	if err != nil {
 		log.Fatalf("Failed to obtain docker credentials - %s", err)
 	}
-	// Grab token and registry url
 	token := tokenOutput.AuthorizationData[0].AuthorizationToken
 	imageURL, _ := url.Parse(*tokenOutput.AuthorizationData[0].ProxyEndpoint)
 	imageDest := imageURL.Host + "/" + image
@@ -81,7 +81,9 @@ func ecrCreds(svc *ecr.ECR, image string) (string, string) {
 	return authStr, imageDest
 }
 
-func getScanResults(svc *ecr.ECR, imageTag string, repo string) map[string]*int64 {
+// getScanResults: Grabs scan results
+func getScanResults(svc *ecr.ECR, repo string, imageTag string) map[string]*int64 {
+	// Constuct scan findings config
 	imageID := ecr.ImageIdentifier{
 		ImageTag: &imageTag,
 	}
@@ -89,9 +91,11 @@ func getScanResults(svc *ecr.ECR, imageTag string, repo string) map[string]*int6
 		ImageId:        &imageID,
 		RepositoryName: &repo,
 	}
+	// Sleep before checking for results. Probably a better way to do this
 	sleep := 5
 	log.Infof("Sleeping for %v seconds", sleep)
 	time.Sleep(time.Duration(sleep * 1000000000))
+	// Grab scan results
 	out, err := svc.DescribeImageScanFindings(&scanConfig)
 	if err != nil {
 		log.Fatalf("Failed to get scan results - %s", err)
@@ -100,4 +104,22 @@ func getScanResults(svc *ecr.ECR, imageTag string, repo string) map[string]*int6
 		log.Fatalf("ECR scan failed - %s", *out.ImageScanStatus.Description)
 	}
 	return out.ImageScanFindings.FindingSeverityCounts
+}
+
+// deleteImage: Deletes image from ECR repo
+func deleteImage(svc *ecr.ECR, repo string, imageTag string) {
+	deleteConfig := &ecr.BatchDeleteImageInput{
+		ImageIds: []*ecr.ImageIdentifier{
+			{
+				ImageTag: aws.String(imageTag),
+			},
+		},
+		RepositoryName: aws.String(repo),
+	}
+	_, err := svc.BatchDeleteImage(deleteConfig)
+	if err != nil {
+		log.Fatalf("Failed to delete image: %v, %s", imageTag, err.Error)
+	} else {
+		log.Info("Cleaned image from repo.")
+	}
 }

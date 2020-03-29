@@ -6,7 +6,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-func compareThresholds(results map[string]*int64) {
+// compareThresholds: Compares the scan results to the allowed thresholds
+func compareThresholds(results map[string]*int64) (bool, []string) {
 	var failedScan bool
 	var failedLevels []string
 	allowedThresholds := map[string]int64{
@@ -23,9 +24,5 @@ func compareThresholds(results map[string]*int64) {
 			failedLevels = append(failedLevels, level)
 		}
 	}
-	if failedScan {
-		log.Fatalf("Scan failed due to exceeding threshold levels: %v", failedLevels)
-	} else {
-		log.Info("Scan passed!")
-	}
+	return failedScan, failedLevels
 }
