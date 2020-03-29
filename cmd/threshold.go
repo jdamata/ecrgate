@@ -8,6 +8,7 @@ import (
 
 func compareThresholds(results map[string]*int64) {
 	var failedScan bool
+	var failedLevels []string
 	allowedThresholds := map[string]int64{
 		"INFORMATIONAL": viper.GetInt64("info"),
 		"LOW":           viper.GetInt64("low"),
@@ -19,10 +20,11 @@ func compareThresholds(results map[string]*int64) {
 		log.Infof("%v: Allowed number of vulnerabilities: %v, Amount of vulnerabilities: %v", level, allowedThresholds[level], *value)
 		if *value > allowedThresholds[level] {
 			failedScan = true
+			failedLevels = append(failedLevels, level)
 		}
 	}
 	if failedScan {
-		log.Fatalf("Scan failed due to exceeding threshold levels.")
+		log.Fatalf("Scan failed due to exceeding threshold levels: %v", failedLevels)
 	} else {
 		log.Info("Scan passed!")
 	}
