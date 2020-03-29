@@ -41,6 +41,29 @@ mv ecrgate-darwin-amd64 ~/bin/ecrgate
 - Docker
 - AWS credentials
 
+Sample IAM policy:
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Stmt1585513157885",
+      "Action": [
+        "ecr:BatchDeleteImage",
+        "ecr:CreateRepository",
+        "ecr:DescribeImageScanFindings",
+        "ecr:DescribeRepositories",
+        "ecr:GetAuthorizationToken",
+        "ecr:PutImageScanningConfiguration",
+        "ecr:PutImageTagMutability"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+```
+
 ## Flags
 --repo is the only required flag.
 
