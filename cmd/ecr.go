@@ -121,7 +121,7 @@ func deleteImage(svc *ecr.ECR, repo string, imageTag string) {
 	}
 	_, err := svc.BatchDeleteImage(deleteConfig)
 	if err != nil {
-		log.Fatalf("Failed to delete image: %v, %s", imageTag, err.Error)
+		log.Fatalf("Failed to delete image: %v, %s", imageTag, err.Error())
 	} else {
 		log.Info("Cleaned image from repo.")
 	}
