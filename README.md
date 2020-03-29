@@ -4,7 +4,7 @@
 [![Downloads](https://img.shields.io/github/downloads/jdamata/ecrgate/total.svg)](https://github.com/jdamata/ecrgate/releases)
 
 # ecrgate
-ecrgate is used to add a security gate to your CI pipeline.  
+ecrgate is used to add a docker image security gate to your CI pipeline.  
 This flow of the utility is as follows:  
 - Create the specified ECR repo (If it does not exist already)
 - Build, tag and push your Dockerfile to the ECR repo. 
@@ -12,6 +12,22 @@ This flow of the utility is as follows:
 - Compare them to the thresholds specified in flags (or defaults)
 - Return exit code 1 if thresholds are too high
 - (Optional) delete the docker image from the ECR repo if 
+
+## Installation
+
+Linux:
+```bash
+wget https://github.com/jdamata/ecrgate/releases/latest/download/ecrgate-linux-amd64
+chmod u+x ecrgate-linux-amd64
+mv ecrgate-linux-amd64 ~/bin/ecrgate
+```
+
+Mac:
+```bash
+wget https://github.com/jdamata/ecrgate/releases/latest/download/ecrgate-darwin-amd64
+chmod u+x ecrgate-darwin-amd64
+mv ecrgate-darwin-amd64 ~/bin/ecrgate
+```
 
 ## Running
 
@@ -43,3 +59,28 @@ Flags:
   -t, --tag string          Docker tag to build (default "latest")
       --version             version for ecrgate
 ```
+
+## Examples
+```bash
+ecrgate --repo joel-test
+```
+- Use local dir as Dockerfile path
+- Push image with tag latest
+- Use default threshold levels
+
+```bash
+ecrgate --repo joel-test --dockerfile example/ubuntu/ --tag ubuntu --clean
+```
+- Use ubuntu/ as Dockerfile path
+- Push image with tag ubuntu
+- Use default threshold levels
+- Purge image from ecr repo if scan fails threshold
+
+```bash
+ecrgate --repo joel-test --dockerfile example/ubuntu/ --tag ubuntu --clean \
+    --info 10 --low 5 --medium 3 --high 2 --critical 1
+```
+- Use ubuntu/ as Dockerfile path
+- Push image with tag ubuntu
+- Use specified threshold levels
+- Purge image from ecr repo if scan fails threshold
