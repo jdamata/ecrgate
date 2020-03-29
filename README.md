@@ -31,6 +31,11 @@ mv ecrgate-darwin-amd64 ~/bin/ecrgate
 
 ## Running
 
+Failing example:  
+https://terminalizer.com/view/419fd79d3593
+
+Passing example:  
+https://terminalizer.com/view/e9d0119b3595
 
 ## Requirements
 - Docker
@@ -65,22 +70,22 @@ Flags:
 ecrgate --repo joel-test
 ```
 - Use local dir as Dockerfile path
-- Push image with tag latest
+- Push docker image with tag latest
 - Use default threshold levels
 
 ```bash
-ecrgate --repo joel-test --dockerfile example/ubuntu/ --tag ubuntu --clean
+ecrgate --repo joel-test --dockerfile example/ --tag $(git describe --abbrev=0 --tags) --clean
 ```
 - Use ubuntu/ as Dockerfile path
-- Push image with tag ubuntu
+- Use the latest git tag as docker image tag
 - Use default threshold levels
 - Purge image from ecr repo if scan fails threshold
 
 ```bash
-ecrgate --repo joel-test --dockerfile example/ubuntu/ --tag ubuntu --clean \
+ecrgate --repo joel-test --dockerfile example/ --tag $(git rev-parse --short HEAD) --clean \
     --info 10 --low 5 --medium 3 --high 2 --critical 1
 ```
 - Use ubuntu/ as Dockerfile path
-- Push image with tag ubuntu
+- Use the short git sha as the docker image tag
 - Use specified threshold levels
 - Purge image from ecr repo if scan fails threshold
