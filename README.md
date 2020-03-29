@@ -8,7 +8,7 @@ This flow of the utility is as follows:
 - Return exit code 1 if thresholds are too high
 - (Optional) delete the docker image from the ECR repo if 
 
-## Examples
+## Running
 
 
 ## Requirements
