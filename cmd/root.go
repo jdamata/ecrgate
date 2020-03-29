@@ -69,7 +69,15 @@ func main(cmd *cobra.Command, args []string) {
 	ecrToken, imageURL := ecrCreds(svc, image)
 	dockerBuild(ctx, docker, imageURL)
 	dockerPush(ctx, docker, svc, ecrToken, imageURL)
-	failedScan, failedLevels := compareThresholds(getScanResults(svc, repo, tag))
+	results := getScanResults(svc, repo, tag)
+	allowedThresholds := map[string]int64{
+		"INFORMATIONAL": viper.GetInt64("info"),
+		"LOW":           viper.GetInt64("low"),
+		"MEDIUM":        viper.GetInt64("medium"),
+		"HIGH":          viper.GetInt64("high"),
+		"CRITICAL":      viper.GetInt64("critical"),
+	}
+	failedScan, failedLevels := compareThresholds(allowedThresholds, results)
 	if failedScan {
 		log.Errorf("Scan failed due to exceeding threshold levels: %v", failedLevels)
 		if viper.GetBool("clean") {
