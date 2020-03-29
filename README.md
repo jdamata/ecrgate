@@ -1,5 +1,5 @@
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
-[![GitHub Release](https://img.shields.io/github/release/jdamata/ecrgate.svg?style=flat)]()
+[![GitHub Release](https://img.shields.io/github/release/jdamata/ecrgate.svg?style=flat)](https://github.com/jdamata/ecrgate/releases?sort-semver)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jdamata/ecrgate)](https://goreportcard.com/report/github.com/jdamata/ecrgate)
 [![Downloads](https://img.shields.io/github/downloads/jdamata/ecrgate/total.svg)](https://github.com/jdamata/ecrgate/releases)
 
