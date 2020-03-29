@@ -31,11 +31,11 @@ mv ecrgate-darwin-amd64 ~/bin/ecrgate
 
 ## Running
 
-Failing example:  
-https://terminalizer.com/view/419fd79d3593
+**Failing example:**
+![Failing example](example/failing.gif)
 
-Passing example:  
-https://terminalizer.com/view/e9d0119b3595
+**Passing example:** 
+![Passing example](example/passing.gif)
 
 ## Requirements
 - Docker
