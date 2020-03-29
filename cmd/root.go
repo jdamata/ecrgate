@@ -42,7 +42,7 @@ func Execute(version string) error {
 	rootCmd.Flags().IntVar(&low, "low", 10, "Acceptable threshold for LOW level results")
 	rootCmd.Flags().IntVar(&medium, "medium", 5, "Acceptable threshold for MEDIUM level results")
 	rootCmd.Flags().IntVar(&high, "high", 3, "Acceptable threshold for HIGH level results")
-	rootCmd.Flags().IntVar(&critical, "critical", 0, "Acceptable threshold for CRITICAL level results")
+	rootCmd.Flags().IntVar(&critical, "critical", 1, "Acceptable threshold for CRITICAL level results")
 	rootCmd.MarkFlagRequired("repo")
 	bindFlags([]string{"dockerfile", "tag", "repo", "clean", "info", "low", "medium", "high", "critical"})
 	return rootCmd.Execute()

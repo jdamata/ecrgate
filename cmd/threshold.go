@@ -19,7 +19,7 @@ func compareThresholds(results map[string]*int64) (bool, []string) {
 	}
 	for level, value := range results {
 		log.Infof("%v: Allowed number of vulnerabilities: %v, Amount of vulnerabilities: %v", level, allowedThresholds[level], *value)
-		if *value > allowedThresholds[level] {
+		if *value >= allowedThresholds[level] {
 			failedScan = true
 			failedLevels = append(failedLevels, level)
 		}
