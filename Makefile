@@ -5,18 +5,18 @@ SRC=$(shell find . -name '*.go')
 
 .PHONY: all clean release install
 
-all: ecr-gate-linux-amd64 ecr-gate-darwin-amd64
+all: ecrgate-linux-amd64 ecrgate-darwin-amd64
 
 clean:
-	rm -f ecr-gate ecr-gate-linux-amd64 ecr-gate-darwin-amd64
+	rm -f ecrgate ecrgate-linux-amd64 ecrgate-darwin-amd64
 
-ecr-gate-linux-amd64: $(SRC)
+ecrgate-linux-amd64: $(SRC)
 	GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o $@ .
 
-ecr-gate-darwin-amd64: $(SRC)
+ecrgate-darwin-amd64: $(SRC)
 	GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o $@ .
 
 install:
-	rm -f acrsync
+	rm -f ecrgate
 	go build $(BUILD_FLAGS) .
-	mv ecr-gate ~/bin/
+	mv ecrgate ~/bin/
