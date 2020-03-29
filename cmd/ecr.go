@@ -28,6 +28,9 @@ func createRepo(svc *ecr.ECR, ecrRepo string) {
 	}
 	// Check if repo exists
 	existingRepos, err := svc.DescribeRepositories(&ecr.DescribeRepositoriesInput{})
+	if err != nil {
+		log.Fatalf("Cannot get list of existing repositories - %v", err)
+	}
 	for _, repo := range existingRepos.Repositories {
 		if ecrRepo == *repo.RepositoryName {
 			log.Info("ECR repo already exists. Skipping creation")

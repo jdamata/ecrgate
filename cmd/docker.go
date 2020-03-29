@@ -53,7 +53,7 @@ func dockerPush(ctx context.Context, docker *client.Client, svc *ecr.ECR, ecrTok
 	log.Info("Pushing image: ", imageDest)
 	out, err := docker.ImagePush(ctx, imageDest, types.ImagePushOptions{RegistryAuth: ecrToken})
 	if err != nil {
-		log.Fatalf("Failed to initalize push image to docker daemon: %v. Error: %s", imageDest, err)
+		log.Fatalf("Failed to initialize push image to docker daemon: %v. Error: %s", imageDest, err)
 	}
 	dockerLogOutput(out)
 }
