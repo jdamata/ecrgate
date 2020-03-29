@@ -20,7 +20,7 @@ func createRepo(svc *ecr.ECR, ecrRepo string) {
 	enableScanning := ecr.ImageScanningConfiguration{
 		ScanOnPush: &enableScan,
 	}
-	tagMutability := "IMMUTABLE"
+	tagMutability := "MUTABLE"
 	repoConfig := &ecr.CreateRepositoryInput{
 		RepositoryName:             aws.String(ecrRepo),
 		ImageScanningConfiguration: &enableScanning,
@@ -89,11 +89,15 @@ func getScanResults(svc *ecr.ECR, imageTag string, repo string) map[string]*int6
 		ImageId:        &imageID,
 		RepositoryName: &repo,
 	}
-	log.Info("Sleeping for 5 seconds")
-	time.Sleep(5 * time.Second)
+	sleep := 5
+	log.Infof("Sleeping for %v seconds", sleep)
+	time.Sleep(time.Duration(sleep * 1000000000))
 	out, err := svc.DescribeImageScanFindings(&scanConfig)
 	if err != nil {
 		log.Fatalf("Failed to get scan results - %s", err)
+	}
+	if *out.ImageScanStatus.Status == string("FAILED") {
+		log.Fatalf("ECR scan failed - %s", *out.ImageScanStatus.Description)
 	}
 	return out.ImageScanFindings.FindingSeverityCounts
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ecr"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -26,7 +27,8 @@ func dockerLogOutput(reader io.ReadCloser) {
 }
 
 // DockerBuild - builds and tags a docker image
-func dockerBuild(ctx context.Context, docker *client.Client, dockerfile string, image string) {
+func dockerBuild(ctx context.Context, docker *client.Client, image string) {
+	dockerfile := viper.GetString("dockerfile")
 	// Docker build config
 	buildOpts := types.ImageBuildOptions{
 		Dockerfile: "Dockerfile",

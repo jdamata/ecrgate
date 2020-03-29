@@ -11,12 +11,23 @@ import (
 )
 
 var (
-	rootCmd = &cobra.Command{
+	info     int
+	low      int
+	medium   int
+	high     int
+	critical int
+	rootCmd  = &cobra.Command{
 		Use:   "ecrgate",
 		Short: "Build, push and gate docker image promotion to ECR",
 		Run:   main,
 	}
 )
+
+func bindFlags(flags []string) {
+	for _, value := range flags {
+		viper.BindPFlag(value, rootCmd.Flags().Lookup(value))
+	}
+}
 
 // Execute executes the root command.
 func Execute(version string) error {
@@ -25,17 +36,16 @@ func Execute(version string) error {
 	rootCmd.Flags().StringP("tag", "t", "latest", "Docker tag to build")
 	rootCmd.Flags().StringP("repo", "r", "", "ECR repo to create and push image to")
 	rootCmd.MarkFlagRequired("repo")
-	viper.BindPFlag("dockerfile", rootCmd.Flags().Lookup("dockerfile"))
-	viper.BindPFlag("tag", rootCmd.Flags().Lookup("tag"))
-	viper.BindPFlag("repo", rootCmd.Flags().Lookup("repo"))
+	rootCmd.Flags().IntVar(&info, "info", 50, "Acceptable threshold for INFORMATIONAL level results")
+	rootCmd.Flags().IntVar(&low, "low", 20, "Acceptable threshold for LOW level results")
+	rootCmd.Flags().IntVar(&medium, "medium", 10, "Acceptable threshold for MEDIUM level results")
+	rootCmd.Flags().IntVar(&high, "high", 3, "Acceptable threshold for HIGH level results")
+	rootCmd.Flags().IntVar(&critical, "critical", 0, "Acceptable threshold for CRITICAL level results")
+	bindFlags([]string{"dockerfile", "tag", "repo", "info", "low", "medium", "high", "critical"})
 	return rootCmd.Execute()
 }
 
 func main(cmd *cobra.Command, args []string) {
-	// Flags
-	dockerfile := viper.GetString("dockerfile")
-	tag := viper.GetString("tag")
-	repo := viper.GetString("repo")
 	// Logging config
 	log.SetFormatter(&log.TextFormatter{
 		DisableColors: false,
@@ -49,10 +59,11 @@ func main(cmd *cobra.Command, args []string) {
 		log.Fatalf("Failed to create docker client. Is docker running? - %s", err)
 	}
 	// Main
+	tag := viper.GetString("tag")
+	repo := viper.GetString("repo")
 	createRepo(svc, repo)
 	ecrToken, imageDest := ecrCreds(svc, repo+":"+tag)
-	dockerBuild(ctx, docker, dockerfile, imageDest)
+	dockerBuild(ctx, docker, imageDest)
 	dockerPush(ctx, docker, svc, ecrToken, imageDest)
-	results := getScanResults(svc, tag, repo)
-	log.Info(results)
+	compareThresholds(getScanResults(svc, tag, repo))
 }

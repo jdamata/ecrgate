@@ -1,2 +1,2 @@
-FROM alpine:3.8
+FROM ubuntu
 ENTRYPOINT ["echo", "Hello World"]
