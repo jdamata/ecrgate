@@ -1,8 +1,6 @@
 [![CircleCI](https://circleci.com/gh/jdamata/ecrgate.svg?style=svg)](https://circleci.com/gh/jdamata/ecrgate)
 [![codecov](https://codecov.io/gh/jdamata/ecrgate/branch/master/graph/badge.svg)](https://codecov.io/gh/jdamata/ecrgate)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jdamata/ecrgate)](https://goreportcard.com/report/github.com/jdamata/ecrgate)
-[![GitHub Release](https://img.shields.io/github/release/jdamata/ecrgate.svg?style=flat)](https://github.com/jdamata/ecrgate/releases?sort-semver)
-[![Downloads](https://img.shields.io/github/downloads/jdamata/ecrgate/total.svg)](https://github.com/jdamata/ecrgate/releases)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 
 # ecrgate
