@@ -10,6 +10,9 @@ all: ecrgate-linux-amd64 ecrgate-darwin-amd64
 clean:
 	rm -f ecrgate ecrgate-linux-amd64 ecrgate-darwin-amd64
 
+test:
+	go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+
 ecrgate-linux-amd64: $(SRC)
 	GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o $@ .
 
