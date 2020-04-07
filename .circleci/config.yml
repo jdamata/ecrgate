@@ -12,3 +12,10 @@ jobs:
       - run: go get -v -t -d ./...
       - run: go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
       - run: bash <(curl -s https://codecov.io/bash)
+      - run:
+          name: Build and push Docker image
+          command: |
+            TAG=$(git rev-parse --short HEAD)
+            docker build -t jdamata/ecrgate:$TAG .
+            echo $DOCKER_PWD | docker login -u $DOCKER_LOGIN --password-stdin
+            docker push jdamata/ecrgate:$TAG
