@@ -19,4 +19,5 @@ jobs:
             TAG=$(git rev-parse --short HEAD)
             docker build -t jdamata/ecrgate:$TAG -t jdamata/ecrgate:latest .
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_LOGIN --password-stdin
-            docker push jdamata/ecrgate:$TAG jdamata/ecrgate:latest
+            docker push jdamata/ecrgate:$TAG
+            docker push jdamata/ecrgate:latest
