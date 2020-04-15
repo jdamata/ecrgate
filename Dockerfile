@@ -9,5 +9,7 @@ ADD . /go/src/github.com/jdamata/ecrgate
 RUN go build -a -tags netgo -ldflags '-w' -o /bin/ecrgate
 
 FROM alpine
-COPY --from=build-env /bin/ecrgate /ecrgate
-ENTRYPOINT ["/ecrgate"]
+
+RUN apk update && apk add git
+
+COPY --from=build-env /bin/ecrgate /usr/bin/ecrgate
