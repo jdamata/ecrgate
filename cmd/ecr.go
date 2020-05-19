@@ -26,6 +26,7 @@ func createRepo(svc *ecr.ECR, ecrRepo string) {
 		ImageScanningConfiguration: &enableScanning,
 		ImageTagMutability:         &tagMutability,
 	}
+
 	// Check if repo exists
 	existingRepos, err := svc.DescribeRepositories(&ecr.DescribeRepositoriesInput{})
 	if err != nil {
@@ -50,6 +51,7 @@ func createRepo(svc *ecr.ECR, ecrRepo string) {
 			return
 		}
 	}
+
 	// Create repo
 	result, err := svc.CreateRepository(repoConfig)
 	if err != nil {
@@ -69,6 +71,7 @@ func ecrCreds(svc *ecr.ECR, image string) (string, string) {
 	token := tokenOutput.AuthorizationData[0].AuthorizationToken
 	imageURL, _ := url.Parse(*tokenOutput.AuthorizationData[0].ProxyEndpoint)
 	imageDest := imageURL.Host + "/" + image
+
 	// Convert token into proper authStr for docker login
 	authInfoBytes, _ := base64.StdEncoding.DecodeString(*token)
 	authInfo := strings.Split(string(authInfoBytes), ":")
@@ -94,19 +97,27 @@ func getScanResults(svc *ecr.ECR, repo string, imageTag string) map[string]*int6
 		ImageId:        &imageID,
 		RepositoryName: &repo,
 	}
-	// Sleep before checking for results. Probably a better way to do this
-	sleep := 5
+
+	// Poll for scan results
+	for {
+		out, err := svc.DescribeImageScanFindings(&scanConfig)
+		if err != nil {
+			log.Fatalf("Failed to get scan results - %s", err)
+		}
+		if *out.ImageScanStatus.Status == string("IN_PROGRESS") {
+			log.Info("Scan IN_PROGRESS")
+			sleepHelper(5)
+		} else if *out.ImageScanStatus.Status == string("FAILED") {
+			log.Fatalf("ECR scan failed - %s", *out.ImageScanStatus.Description)
+		} else if *out.ImageScanStatus.Status == string("COMPLETE") {
+			return out.ImageScanFindings.FindingSeverityCounts
+		}
+	}
+}
+
+func sleepHelper(sleep int) {
 	log.Infof("Sleeping for %v seconds", sleep)
 	time.Sleep(time.Duration(sleep * 1000000000))
-	// Grab scan results
-	out, err := svc.DescribeImageScanFindings(&scanConfig)
-	if err != nil {
-		log.Fatalf("Failed to get scan results - %s", err)
-	}
-	if *out.ImageScanStatus.Status == string("FAILED") {
-		log.Fatalf("ECR scan failed - %s", *out.ImageScanStatus.Description)
-	}
-	return out.ImageScanFindings.FindingSeverityCounts
 }
 
 // deleteImage: Deletes image from ECR repo
