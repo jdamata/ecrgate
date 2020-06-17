@@ -5,19 +5,19 @@ SRC=$(shell find . -name '*.go')
 
 .PHONY: all clean release install
 
-all: ecrgate-linux-amd64 ecrgate-darwin-amd64
+all: linux darwin
 
 clean:
-	rm -f ecrgate ecrgate-linux-amd64 ecrgate-darwin-amd64
+	rm -f ecrgate linux darwin
 
 test:
 	go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
 
-ecrgate-linux-amd64: $(SRC)
-	GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o $@ .
+linux: $(SRC)
+	GOOS=linux GOARCH=amd64 go build $(BUILD_FLAGS) -o ecrgate-linux .
 
-ecrgate-darwin-amd64: $(SRC)
-	GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o $@ .
+darwin: $(SRC)
+	GOOS=darwin GOARCH=amd64 go build $(BUILD_FLAGS) -o ecrgate-darwin .
 
 install:
 	rm -f ecrgate

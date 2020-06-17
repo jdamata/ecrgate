@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -12,6 +13,62 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecr"
 )
+
+type PolicyDocument struct {
+	Version   string
+	Statement []StatementEntry
+}
+
+type StatementEntry struct {
+	Effect    string
+	Action    []string
+	Principal PrincipalEntry
+	Sid       string
+}
+
+type PrincipalEntry struct {
+	AWS []string
+}
+
+// allowRepoPull: Adds a ECR policy to allow a different AWS account to pull images
+func allowRepoPull(svc *ecr.ECR, accountIDs []string, ecrRepo string) {
+	policy := PolicyDocument{
+		Version: "2008-10-17",
+		Statement: []StatementEntry{
+			{
+				Sid:    "allow-pull-from-aws-accounts",
+				Effect: "Allow",
+				Action: []string{
+					"ecr:BatchCheckLayerAvailability",
+					"ecr:BatchGetImage",
+					"ecr:GetDownloadUrlForLayer",
+				},
+				Principal: PrincipalEntry{
+					AWS: []string{},
+				},
+			},
+		},
+	}
+	for _, v := range accountIDs {
+		accountID := fmt.Sprintf("arn:aws:iam::%s:root", v)
+		policy.Statement[0].Principal.AWS = append(policy.Statement[0].Principal.AWS, accountID)
+	}
+
+	jsonPolicy, _ := json.Marshal(policy)
+	jsonPolicyString := string(jsonPolicy)
+
+	policyInput := ecr.SetRepositoryPolicyInput{
+		PolicyText:     &jsonPolicyString,
+		RepositoryName: &ecrRepo,
+	}
+
+	out, err := svc.SetRepositoryPolicy(&policyInput)
+	if err != nil {
+		log.Errorf("Failed to add ECR policy - %s", err)
+	} else {
+		log.Infof("Added ECR policy - %s", out.String())
+	}
+}
 
 // CreateRepo - Creates an ECR repo if one does not exist
 func createRepo(svc *ecr.ECR, ecrRepo string) {

@@ -75,6 +75,7 @@ Usage:
   ecrgate [flags]
 
 Flags:
+  -a, --accounts strings    List of AWS account ids to allow pulling images from
   -c, --clean               Delete image from ECR if scan fails threshold
       --critical int        Acceptable threshold for CRITICAL level results
   -d, --dockerfile string   Path to Dockerfile (default ".")
