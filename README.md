@@ -11,7 +11,7 @@ This flow of the utility is as follows:
 - Pull down the scan results of that image
 - Compare them to the thresholds specified in flags (or defaults)
 - Return exit code 1 if thresholds are too high
-- (Optional) delete the docker image from the ECR repo if 
+- (Optional) Delete the docker image from the ECR repo if the scan results exceed the threshold
 
 ## Installation
 
@@ -28,14 +28,6 @@ wget https://github.com/jdamata/ecrgate/releases/latest/download/ecrgate-darwin-
 chmod u+x ecrgate-darwin-amd64
 mv ecrgate-darwin-amd64 ~/bin/ecrgate
 ```
-
-## Running
-
-**Failing example:**
-![Failing example](example/failing.gif)
-
-**Passing example:** 
-![Passing example](example/passing.gif)
 
 ## Requirements
 - Docker
@@ -64,31 +56,6 @@ Sample IAM policy:
 }
 ```
 
-## Flags
---repo is the only required flag.
-
-```bash
-$ go run main.go --help
-Build, push and gate docker image promotion to ECR
-
-Usage:
-  ecrgate [flags]
-
-Flags:
-  -a, --accounts strings    List of AWS account ids to allow pulling images from
-  -c, --clean               Delete image from ECR if scan fails threshold
-      --critical int        Acceptable threshold for CRITICAL level results
-  -d, --dockerfile string   Path to Dockerfile (default ".")
-  -h, --help                help for ecrgate
-      --high int            Acceptable threshold for HIGH level results (default 3)
-      --info int            Acceptable threshold for INFORMATIONAL level results (default 25)
-      --low int             Acceptable threshold for LOW level results (default 10)
-      --medium int          Acceptable threshold for MEDIUM level results (default 5)
-  -r, --repo string         ECR repo to create and push image to
-  -t, --tag string          Docker tag to build (default "latest")
-      --version             version for ecrgate
-```
-
 ## Examples
 ```bash
 ecrgate --repo joel-test
@@ -113,3 +80,36 @@ ecrgate --repo joel-test --dockerfile example/ --tag $(git rev-parse --short HEA
 - Use the short git sha as the docker image tag
 - Use specified threshold levels
 - Purge image from ecr repo if scan fails threshold
+
+## Running
+
+**Failing example:**
+![Failing example](example/failing.gif)
+
+**Passing example:** 
+![Passing example](example/passing.gif)
+
+## Flags
+--repo is the only required flag.
+
+```bash
+$ go run main.go --help
+Build, push and gate docker image promotion to ECR
+
+Usage:
+  ecrgate [flags]
+
+Flags:
+  -a, --accounts strings    List of AWS account ids to allow pulling images from
+  -c, --clean               Delete image from ECR if scan fails threshold
+      --critical int        Acceptable threshold for CRITICAL level results
+  -d, --dockerfile string   Path to Dockerfile (default ".")
+  -h, --help                help for ecrgate
+      --high int            Acceptable threshold for HIGH level results (default 3)
+      --info int            Acceptable threshold for INFORMATIONAL level results (default 25)
+      --low int             Acceptable threshold for LOW level results (default 10)
+      --medium int          Acceptable threshold for MEDIUM level results (default 5)
+  -r, --repo string         ECR repo to create and push image to
+  -t, --tag string          Docker tag to build (default "latest")
+      --version             version for ecrgate
+```
