@@ -56,6 +56,31 @@ Sample IAM policy:
 }
 ```
 
+## Flags
+--repo is the only required flag.
+
+```bash
+$ go run main.go --help
+Build, push and gate docker image promotion to ECR
+
+Usage:
+  ecrgate [flags]
+
+Flags:
+  -a, --accounts strings    List of AWS account ids to allow pulling images from
+  -c, --clean               Delete image from ECR if scan fails threshold
+      --critical int        Acceptable threshold for CRITICAL level results
+  -d, --dockerfile string   Path to Dockerfile (default ".")
+  -h, --help                help for ecrgate
+      --high int            Acceptable threshold for HIGH level results (default 3)
+      --info int            Acceptable threshold for INFORMATIONAL level results (default 25)
+      --low int             Acceptable threshold for LOW level results (default 10)
+      --medium int          Acceptable threshold for MEDIUM level results (default 5)
+  -r, --repo string         ECR repo to create and push image to
+  -t, --tag string          Docker tag to build (default "latest")
+      --version             version for ecrgate
+```
+
 ## Examples
 ```bash
 ecrgate --repo joel-test
@@ -89,27 +114,3 @@ ecrgate --repo joel-test --dockerfile example/ --tag $(git rev-parse --short HEA
 **Passing example:** 
 ![Passing example](example/passing.gif)
 
-## Flags
---repo is the only required flag.
-
-```bash
-$ go run main.go --help
-Build, push and gate docker image promotion to ECR
-
-Usage:
-  ecrgate [flags]
-
-Flags:
-  -a, --accounts strings    List of AWS account ids to allow pulling images from
-  -c, --clean               Delete image from ECR if scan fails threshold
-      --critical int        Acceptable threshold for CRITICAL level results
-  -d, --dockerfile string   Path to Dockerfile (default ".")
-  -h, --help                help for ecrgate
-      --high int            Acceptable threshold for HIGH level results (default 3)
-      --info int            Acceptable threshold for INFORMATIONAL level results (default 25)
-      --low int             Acceptable threshold for LOW level results (default 10)
-      --medium int          Acceptable threshold for MEDIUM level results (default 5)
-  -r, --repo string         ECR repo to create and push image to
-  -t, --tag string          Docker tag to build (default "latest")
-      --version             version for ecrgate
-```
