@@ -13,12 +13,13 @@ import (
 )
 
 var (
-	info     int
-	low      int
-	medium   int
-	high     int
-	critical int
-	rootCmd  = &cobra.Command{
+	undefined int
+	info      int
+	low       int
+	medium    int
+	high      int
+	critical  int
+	rootCmd   = &cobra.Command{
 		Use:   "ecrgate",
 		Short: "Build, push and gate docker image promotion to ECR",
 		Run:   main,
@@ -40,7 +41,7 @@ func Execute(version string) error {
 	rootCmd.Flags().BoolP("clean", "c", false, "Delete image from ECR if scan fails threshold")
 	rootCmd.Flags().BoolP("scan", "s", true, "Enable scanning of image")
 	rootCmd.Flags().StringSliceP("accounts", "a", []string{}, "List of AWS account ids to allow pulling images from")
-	rootCmd.Flags().IntVar(&info, "undefined", 25, "Acceptable threshold for UNDEFINED level results")
+	rootCmd.Flags().IntVar(&undefined, "undefined", 100, "Acceptable threshold for UNDEFINED level results")
 	rootCmd.Flags().IntVar(&info, "info", 25, "Acceptable threshold for INFORMATIONAL level results")
 	rootCmd.Flags().IntVar(&low, "low", 10, "Acceptable threshold for LOW level results")
 	rootCmd.Flags().IntVar(&medium, "medium", 5, "Acceptable threshold for MEDIUM level results")
