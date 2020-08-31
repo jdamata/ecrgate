@@ -38,14 +38,16 @@ func Execute(version string) error {
 	rootCmd.Flags().StringP("repo", "r", "", "ECR repo to create and push image to")
 	rootCmd.Flags().StringP("tag", "t", "latest", "Docker tag to build")
 	rootCmd.Flags().BoolP("clean", "c", false, "Delete image from ECR if scan fails threshold")
+	rootCmd.Flags().BoolP("scan", "s", true, "Enable scanning of image")
 	rootCmd.Flags().StringSliceP("accounts", "a", []string{}, "List of AWS account ids to allow pulling images from")
+	rootCmd.Flags().IntVar(&info, "undefined", 25, "Acceptable threshold for UNDEFINED level results")
 	rootCmd.Flags().IntVar(&info, "info", 25, "Acceptable threshold for INFORMATIONAL level results")
 	rootCmd.Flags().IntVar(&low, "low", 10, "Acceptable threshold for LOW level results")
 	rootCmd.Flags().IntVar(&medium, "medium", 5, "Acceptable threshold for MEDIUM level results")
 	rootCmd.Flags().IntVar(&high, "high", 3, "Acceptable threshold for HIGH level results")
 	rootCmd.Flags().IntVar(&critical, "critical", 1, "Acceptable threshold for CRITICAL level results")
 	rootCmd.MarkFlagRequired("repo")
-	bindFlags([]string{"dockerfile", "tag", "repo", "clean", "accounts", "info", "low", "medium", "high", "critical"})
+	bindFlags([]string{"dockerfile", "tag", "repo", "clean", "scan", "accounts", "info", "low", "medium", "high", "critical"})
 	return rootCmd.Execute()
 }
 
@@ -81,31 +83,36 @@ func main(cmd *cobra.Command, args []string) {
 	dockerBuild(ctx, docker, imageURL)
 	dockerPush(ctx, docker, svc, ecrToken, imageURL)
 
-	// Poll and pull ECR scan results
-	results := getScanResults(svc, repo, tag)
-	allowedThresholds := map[string]int64{
-		"INFORMATIONAL": viper.GetInt64("info"),
-		"LOW":           viper.GetInt64("low"),
-		"MEDIUM":        viper.GetInt64("medium"),
-		"HIGH":          viper.GetInt64("high"),
-		"CRITICAL":      viper.GetInt64("critical"),
-	}
+	if viper.GetBool("scan") {
+		// Poll and pull ECR scan results
+		results := getScanResults(svc, repo, tag)
+		allowedThresholds := map[string]int64{
+			"UNDEFINED":     viper.GetInt64("undefined"),
+			"INFORMATIONAL": viper.GetInt64("info"),
+			"LOW":           viper.GetInt64("low"),
+			"MEDIUM":        viper.GetInt64("medium"),
+			"HIGH":          viper.GetInt64("high"),
+			"CRITICAL":      viper.GetInt64("critical"),
+		}
 
-	// Compare scan results to specified thresholds
-	failedScan, failedLevels := compareThresholds(allowedThresholds, results)
-	if failedScan {
-		log.Errorf("Scan failed due to exceeding threshold levels: %v", failedLevels)
+		// Compare scan results to specified thresholds
+		failedScan, failedLevels := compareThresholds(allowedThresholds, results)
+		if failedScan {
+			log.Errorf("Scan failed due to exceeding threshold levels: %v", failedLevels)
 
-		// Delete docker image if scan threshold exceeded AND clean flag specified
-		if viper.GetBool("clean") {
-			log.Info("Clean specified. Deleting image from ecr")
-			deleteImage(svc, repo, tag)
-			// Purposely return an error code to fail CI builds
-			os.Exit(1)
+			// Delete docker image if scan threshold exceeded AND clean flag specified
+			if viper.GetBool("clean") {
+				log.Info("Clean specified. Deleting image from ecr")
+				deleteImage(svc, repo, tag)
+				// Purposely return an error code to fail CI builds
+				os.Exit(1)
+			} else {
+				os.Exit(1)
+			}
 		} else {
-			os.Exit(1)
+			log.Info("Scan passed!")
 		}
 	} else {
-		log.Info("Scan passed!")
+		log.Info("Skipping scan")
 	}
 }
