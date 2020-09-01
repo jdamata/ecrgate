@@ -84,7 +84,7 @@ func main(cmd *cobra.Command, args []string) {
 	dockerBuild(ctx, docker, imageURL)
 	dockerPush(ctx, docker, svc, ecrToken, imageURL)
 
-	if viper.GetBool("disable_scan") {
+	if !viper.GetBool("disable_scan") {
 		// Poll and pull ECR scan results
 		results := getScanResults(svc, repo, tag)
 		allowedThresholds := map[string]int64{
@@ -105,11 +105,9 @@ func main(cmd *cobra.Command, args []string) {
 			if viper.GetBool("clean") {
 				log.Info("Clean specified. Deleting image from ecr")
 				deleteImage(svc, repo, tag)
-				// Purposely return an error code to fail CI builds
-				os.Exit(1)
-			} else {
-				os.Exit(1)
 			}
+			// Purposely return an error code to fail CI builds
+			os.Exit(1)
 		} else {
 			log.Info("Scan passed!")
 		}
