@@ -10,7 +10,7 @@ ecrgate --repo joel-test
 &nbsp;
 
 ```bash
-ecrgate --repo joel-test --dockerfile ubuntu/ --tag ubuntu --clean
+ecrgate --repo joel-test --tag ubuntu --clean
 ```
 - Use ubuntu/ as Dockerfile path
 - Push image with tag ubuntu
@@ -20,7 +20,7 @@ ecrgate --repo joel-test --dockerfile ubuntu/ --tag ubuntu --clean
 &nbsp;
 
 ```bash
-ecrgate --repo joel-test --dockerfile ubuntu/ --tag ubuntu --clean \
+ecrgate --repo joel-test --tag ubuntu --clean \
     --info 10 --low 5 --medium 3 --high 2 --critical 1
 ```
 - Use ubuntu/ as Dockerfile path

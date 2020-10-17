@@ -11,30 +11,31 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ecr"
 )
 
-type PolicyDocument struct {
+type policyDocument struct {
 	Version   string
-	Statement []StatementEntry
+	Statement []statementEntry
 }
 
-type StatementEntry struct {
+type statementEntry struct {
 	Effect    string
 	Action    []string
-	Principal PrincipalEntry
+	Principal principalEntry
 	Sid       string
 }
 
-type PrincipalEntry struct {
+type principalEntry struct {
 	AWS []string
 }
 
 // allowRepoPull: Adds a ECR policy to allow a different AWS account to pull images
 func allowRepoPull(svc *ecr.ECR, accountIDs []string, ecrRepo string) {
-	policy := PolicyDocument{
+	policy := policyDocument{
 		Version: "2008-10-17",
-		Statement: []StatementEntry{
+		Statement: []statementEntry{
 			{
 				Sid:    "allow-pull-from-aws-accounts",
 				Effect: "Allow",
@@ -43,7 +44,7 @@ func allowRepoPull(svc *ecr.ECR, accountIDs []string, ecrRepo string) {
 					"ecr:BatchGetImage",
 					"ecr:GetDownloadUrlForLayer",
 				},
-				Principal: PrincipalEntry{
+				Principal: principalEntry{
 					AWS: []string{},
 				},
 			},
@@ -159,7 +160,14 @@ func getScanResults(svc *ecr.ECR, repo string, imageTag string) map[string]*int6
 	for {
 		out, err := svc.DescribeImageScanFindings(&scanConfig)
 		if err != nil {
-			log.Fatalf("Failed to get scan results - %s", err)
+			if awsErr, ok := err.(awserr.Error); ok {
+				switch awsErr.Code() {
+				// if the image does not exist in the repo, we should retry after 2 seconds.
+				case ecr.ErrCodeImageNotFoundException:
+					log.Errorf("%s - Retrying in 2 seconds", err)
+					sleepHelper(2)
+				}
+			}
 		}
 		if *out.ImageScanStatus.Status == string("IN_PROGRESS") {
 			log.Info("Scan IN_PROGRESS")
