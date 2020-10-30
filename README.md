@@ -47,6 +47,7 @@ Flags:
       --medium int          Acceptable threshold for MEDIUM level results (default 5)
   -r, --repo string         ECR repo to create and push image to
   -t, --tag string          Docker tag to build (default "latest")
+  -s, --disable_scan        Skip checking AWS ECR scan results
       --version             version for ecrgate
 ```
 
