@@ -4,14 +4,9 @@
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 
 # ecrgate
-ecrgate is used to add a docker image security gate to your CI pipeline.  
-This flow of the utility is as follows:  
-- Create the specified ECR repo (If it does not exist already)
-- Build, tag and push your Dockerfile to the ECR repo. 
-- Pull down the scan results of that image
-- Compare them to the thresholds specified in flags (or defaults)
-- Return exit code 1 if thresholds are too high
-- (Optional) Delete the docker image from the ECR repo if the scan results exceed the threshold
+ecrgate is used to simplify the building, pushing and scanning of docker images into AWS ECR. It can build docker iamges, create AWS ECR repositories, push docker images, check AWS ECR scan results, etc...
+
+The main usage for this tool is in CI pipelines where we want to fail a pipeline if a docker image does not pass specific thresholds of vulnerabilities.
 
 ## Installation
 
@@ -27,6 +22,49 @@ Mac:
 wget https://github.com/jdamata/ecrgate/releases/latest/download/ecrgate-darwin-amd64
 chmod u+x ecrgate-darwin-amd64
 mv ecrgate-darwin-amd64 ~/bin/ecrgate
+```
+
+## Flags
+--repo is the only required flag.
+
+```bash
+$ go run main.go --help
+Build, push and gate docker image promotion to ECR
+
+Usage:
+  ecrgate [flags]
+
+Flags:
+  -a, --accounts strings    List of AWS account ids to allow pulling images from
+  -c, --clean               Delete image from ECR if scan fails threshold
+      --critical int        Acceptable threshold for CRITICAL level results
+  -d, --dockerfile string   Path to Dockerfile (default ".")
+  -h, --help                help for ecrgate
+  -i, --image               Existing docker image to pull down instead of building a new one
+      --high int            Acceptable threshold for HIGH level results (default 3)
+      --info int            Acceptable threshold for INFORMATIONAL level results (default 25)
+      --low int             Acceptable threshold for LOW level results (default 10)
+      --medium int          Acceptable threshold for MEDIUM level results (default 5)
+  -r, --repo string         ECR repo to create and push image to
+  -t, --tag string          Docker tag to build (default "latest")
+      --version             version for ecrgate
+```
+
+## Examples
+
+```bash
+# Use ecrgate defaults and local dir for Dockerfile
+ecrgate --repo joel-test
+
+# Specify path to Dockerfile, docker tag and delete image on failed scan
+ecrgate --repo joel-test --dockerfile example/ --tag $(git describe --abbrev=0 --tags) --clean
+
+# Specify threshold levels
+ecrgate --repo joel-test --dockerfile example/ --tag $(git rev-parse --short HEAD) --clean \ 
+  --info 10 --low 5 --medium 3 --high 2 --critical 1
+
+# Use a remote image instead of building a local one
+ecrgate --repo ingress-nginx --image quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0
 ```
 
 ## Requirements
@@ -55,62 +93,3 @@ Sample IAM policy:
   ]
 }
 ```
-
-## Flags
---repo is the only required flag.
-
-```bash
-$ go run main.go --help
-Build, push and gate docker image promotion to ECR
-
-Usage:
-  ecrgate [flags]
-
-Flags:
-  -a, --accounts strings    List of AWS account ids to allow pulling images from
-  -c, --clean               Delete image from ECR if scan fails threshold
-      --critical int        Acceptable threshold for CRITICAL level results
-  -d, --dockerfile string   Path to Dockerfile (default ".")
-  -h, --help                help for ecrgate
-      --high int            Acceptable threshold for HIGH level results (default 3)
-      --info int            Acceptable threshold for INFORMATIONAL level results (default 25)
-      --low int             Acceptable threshold for LOW level results (default 10)
-      --medium int          Acceptable threshold for MEDIUM level results (default 5)
-  -r, --repo string         ECR repo to create and push image to
-  -t, --tag string          Docker tag to build (default "latest")
-      --version             version for ecrgate
-```
-
-## Examples
-```bash
-ecrgate --repo joel-test
-```
-- Use local dir as Dockerfile path
-- Push docker image with tag latest
-- Use default threshold levels
-
-```bash
-ecrgate --repo joel-test --dockerfile example/ --tag $(git describe --abbrev=0 --tags) --clean
-```
-- Use ubuntu/ as Dockerfile path
-- Use the latest git tag as docker image tag
-- Use default threshold levels
-- Purge image from ecr repo if scan fails threshold
-
-```bash
-ecrgate --repo joel-test --dockerfile example/ --tag $(git rev-parse --short HEAD) --clean \
-    --info 10 --low 5 --medium 3 --high 2 --critical 1
-```
-- Use ubuntu/ as Dockerfile path
-- Use the short git sha as the docker image tag
-- Use specified threshold levels
-- Purge image from ecr repo if scan fails threshold
-
-## Running
-
-**Failing example:**
-![Failing example](example/failing.gif)
-
-**Passing example:** 
-![Passing example](example/passing.gif)
-

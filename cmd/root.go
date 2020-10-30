@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecr"
@@ -36,6 +37,7 @@ func bindFlags(flags []string) {
 func Execute(version string) error {
 	rootCmd.Version = version
 	rootCmd.Flags().StringP("dockerfile", "d", ".", "Path to Dockerfile")
+	rootCmd.Flags().StringP("image", "i", "", "Existing docker image to pull down")
 	rootCmd.Flags().StringP("repo", "r", "", "ECR repo to create and push image to")
 	rootCmd.Flags().StringP("tag", "t", "latest", "Docker tag to build")
 	rootCmd.Flags().BoolP("clean", "c", false, "Delete image from ECR if scan fails threshold")
@@ -48,7 +50,7 @@ func Execute(version string) error {
 	rootCmd.Flags().IntVar(&high, "high", 3, "Acceptable threshold for HIGH level results")
 	rootCmd.Flags().IntVar(&critical, "critical", 1, "Acceptable threshold for CRITICAL level results")
 	rootCmd.MarkFlagRequired("repo")
-	bindFlags([]string{"dockerfile", "tag", "repo", "clean", "disable_scan", "accounts", "info", "low", "medium", "high", "critical", "undefined"})
+	bindFlags([]string{"dockerfile", "image", "tag", "repo", "clean", "disable_scan", "accounts", "info", "low", "medium", "high", "critical", "undefined"})
 	return rootCmd.Execute()
 }
 
@@ -70,7 +72,15 @@ func main(cmd *cobra.Command, args []string) {
 	// Get viper configs
 	repo := viper.GetString("repo")
 	tag := viper.GetString("tag")
-	image := repo + ":" + tag
+
+	if viper.GetString("image") != "" {
+		// If image is defined, lets set the tag to the same as the image we are pulling
+		image := strings.Split(viper.GetString("image"), ":")
+		// If image has tag defined, use that tag. Otherwise it will default to latest
+		if len(image) > 1 {
+			tag = image[1]
+		}
+	}
 
 	// Create ECR repo and add ecr policy
 	createRepo(svc, repo)
@@ -80,8 +90,19 @@ func main(cmd *cobra.Command, args []string) {
 	}
 
 	// Authenticate to ECR repo, docker build and docker push
-	ecrToken, imageURL := ecrCreds(svc, image)
-	dockerBuild(ctx, docker, imageURL)
+	ecrToken, imageURL := ecrCreds(svc, repo+":"+tag)
+
+	// Build OR pull down image
+	if viper.GetString("image") != "" {
+		image := viper.GetString("image")
+		log.Info("image flag passed, going to pull down image instead of building local Dockerfile")
+		dockerPull(ctx, docker, image)
+		dockerTag(ctx, docker, image, imageURL)
+	} else {
+		dockerBuild(ctx, docker, imageURL)
+	}
+
+	// Push docker image to ECR
 	dockerPush(ctx, docker, svc, ecrToken, imageURL)
 
 	if !viper.GetBool("disable_scan") {

@@ -57,3 +57,22 @@ func dockerPush(ctx context.Context, docker *client.Client, svc *ecr.ECR, ecrTok
 	}
 	dockerLogOutput(out)
 }
+
+// dockerPull: Pull docker iamge down
+func dockerPull(ctx context.Context, docker *client.Client, image string) {
+	log.Info("Pulling image: ", image)
+	out, err := docker.ImagePull(ctx, image, types.ImagePullOptions{})
+	if err != nil {
+		log.Fatalf("Failed to pull docker image: %v. Error: %s", image, err)
+	}
+	dockerLogOutput(out)
+}
+
+// dockerTag: Pull docker iamge down
+func dockerTag(ctx context.Context, docker *client.Client, image string, imageDest string) {
+	log.Infof("Tagging docker image: %v with tag: %v", image, imageDest)
+	err := docker.ImageTag(ctx, image, imageDest)
+	if err != nil {
+		log.Fatalf("Failed to tag docker image: %s", err)
+	}
+}
