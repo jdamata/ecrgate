@@ -4,7 +4,7 @@
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 
 # ecrgate
-ecrgate is used to simplify the building, pushing and scanning of docker images into AWS ECR. It can build docker iamges, create AWS ECR repositories, push docker images, check AWS ECR scan results, etc...
+ecrgate is used to simplify the building, pushing and scanning of docker images into AWS ECR. It can build docker images, create AWS ECR repositories, push docker images, check AWS ECR scan results, etc...
 
 The main usage for this tool is in CI pipelines where we want to fail a pipeline if a docker image does not pass specific thresholds of vulnerabilities.
 
