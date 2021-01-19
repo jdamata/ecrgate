@@ -40,6 +40,7 @@ func Execute(version string) error {
 	rootCmd.Flags().StringP("image", "i", "", "Existing docker image to pull down")
 	rootCmd.Flags().StringP("repo", "r", "", "ECR repo to create and push image to")
 	rootCmd.Flags().StringP("tag", "t", "latest", "Docker tag to build")
+	rootCmd.Flags().StringSliceP("build_args", "b", []string{}, "List of docker build args")
 	rootCmd.Flags().BoolP("clean", "c", false, "Delete image from ECR if scan fails threshold")
 	rootCmd.Flags().BoolP("disable_scan", "s", false, "Disable scanning of image")
 	rootCmd.Flags().StringSliceP("accounts", "a", []string{}, "List of AWS account ids to allow pulling images from")
@@ -50,7 +51,7 @@ func Execute(version string) error {
 	rootCmd.Flags().IntVar(&high, "high", 3, "Acceptable threshold for HIGH level results")
 	rootCmd.Flags().IntVar(&critical, "critical", 1, "Acceptable threshold for CRITICAL level results")
 	rootCmd.MarkFlagRequired("repo")
-	bindFlags([]string{"dockerfile", "image", "tag", "repo", "clean", "disable_scan", "accounts", "info", "low", "medium", "high", "critical", "undefined"})
+	bindFlags([]string{"dockerfile", "image", "tag", "repo", "clean", "disable_scan", "accounts", "info", "low", "medium", "high", "critical", "undefined", "build_args"})
 	return rootCmd.Execute()
 }
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"io"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/service/ecr"
 	log "github.com/sirupsen/logrus"
@@ -21,29 +22,57 @@ func dockerLogOutput(reader io.ReadCloser) {
 	defer reader.Close()
 	termFd, isTerm := term.GetFdInfo(os.Stderr)
 	err := jsonmessage.DisplayJSONMessagesStream(reader, os.Stderr, termFd, isTerm, nil)
+
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
 }
 
+func parseDockerArgs(buildArgsInput []string) map[string]*string {
+	var buildArgs = map[string]*string{}
+
+	for _, v := range buildArgsInput {
+		// split each args on equal sign
+		arg := strings.Split(v, "=")
+
+		if len(arg) == 1 && arg[0] == "s" {
+			log.Fatalf("Failed to parse build args. Build args must be in format foo=bar,baz=qux")
+		}
+
+		buildArgs[arg[0]] = &arg[1]
+	}
+
+	return buildArgs
+}
+
 // dockerBuild: builds and tags a docker image
 func dockerBuild(ctx context.Context, docker *client.Client, image string) {
 	dockerfile := viper.GetString("dockerfile")
+
 	// Docker build config
 	buildOpts := types.ImageBuildOptions{
 		Dockerfile: "Dockerfile",
 		Tags:       []string{image},
 	}
+
+	if buildArg := viper.GetStringSlice("build_args"); len(buildArg) >= 1 {
+		buildOpts.BuildArgs = parseDockerArgs(buildArg)
+	}
+
 	// Create docker context
 	buildCtx, err := archive.TarWithOptions(dockerfile, &archive.TarOptions{})
+
 	if err != nil {
 		log.Fatalf("Failed to build docker context - %s", err)
 	}
+
 	log.Info("Building docker image")
 	out, err := docker.ImageBuild(ctx, buildCtx, buildOpts)
+
 	if err != nil {
 		log.Fatalf("Failed to build docker image - %s", err)
 	}
+
 	dockerLogOutput(out.Body)
 }
 
