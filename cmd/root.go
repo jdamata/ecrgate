@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -107,19 +108,26 @@ func main(cmd *cobra.Command, args []string) {
 	dockerPush(ctx, docker, svc, ecrToken, imageURL)
 
 	if !viper.GetBool("disable_scan") {
-		// Poll and pull ECR scan results
 		results := getScanResults(svc, repo, tag)
+		resultLink := fmt.Sprintf("https://console.aws.amazon.com/ecr/repositories/%v/%v/%v/image/%v/scan-results/?region=%v",
+			"private", // Need to support both public and private repos
+			*results.RegistryId,
+			*results.RepositoryName,
+			*results.ImageId.ImageDigest,
+			os.Getenv("AWS_REGION"))
+
+		// Poll and pull ECR scan results
 		allowedThresholds := map[string]int64{
-			"UNDEFINED":     viper.GetInt64("undefined"),
-			"INFORMATIONAL": viper.GetInt64("info"),
-			"LOW":           viper.GetInt64("low"),
-			"MEDIUM":        viper.GetInt64("medium"),
-			"HIGH":          viper.GetInt64("high"),
-			"CRITICAL":      viper.GetInt64("critical"),
+			ecr.FindingSeverityUndefined:     viper.GetInt64("undefined"),
+			ecr.FindingSeverityInformational: viper.GetInt64("info"),
+			ecr.FindingSeverityLow:           viper.GetInt64("low"),
+			ecr.FindingSeverityMedium:        viper.GetInt64("medium"),
+			ecr.FindingSeverityHigh:          viper.GetInt64("high"),
+			ecr.FindingSeverityCritical:      viper.GetInt64("critical"),
 		}
 
 		// Compare scan results to specified thresholds
-		failedScan, failedLevels := compareThresholds(allowedThresholds, results)
+		failedScan, failedLevels := compareThresholds(allowedThresholds, results.ImageScanFindings.FindingSeverityCounts)
 		if failedScan {
 			log.Errorf("Scan failed due to exceeding threshold levels: %v", failedLevels)
 
@@ -129,9 +137,11 @@ func main(cmd *cobra.Command, args []string) {
 				deleteImage(svc, repo, tag)
 			}
 			// Purposely return an error code to fail CI builds
+			log.Infof("Scan result link: %v", resultLink)
 			os.Exit(1)
 		} else {
 			log.Info("Scan passed!")
+			log.Infof("Scan result link: %v", resultLink)
 		}
 	} else {
 		log.Info("Skipping scan")

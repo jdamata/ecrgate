@@ -146,7 +146,7 @@ func ecrCreds(svc *ecr.ECR, image string) (string, string) {
 }
 
 // getScanResults: Grabs scan results
-func getScanResults(svc *ecr.ECR, repo string, imageTag string) map[string]*int64 {
+func getScanResults(svc *ecr.ECR, repo string, imageTag string) *ecr.DescribeImageScanFindingsOutput {
 	// Constuct scan findings config
 	imageID := ecr.ImageIdentifier{
 		ImageTag: &imageTag,
@@ -175,7 +175,7 @@ func getScanResults(svc *ecr.ECR, repo string, imageTag string) map[string]*int6
 		} else if *out.ImageScanStatus.Status == string("FAILED") {
 			log.Fatalf("ECR scan failed - %s", *out.ImageScanStatus.Description)
 		} else if *out.ImageScanStatus.Status == string("COMPLETE") {
-			return out.ImageScanFindings.FindingSeverityCounts
+			return out
 		}
 	}
 }
