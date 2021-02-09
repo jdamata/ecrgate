@@ -49,9 +49,16 @@ func parseDockerArgs(buildArgsInput []string) map[string]*string {
 func dockerBuild(ctx context.Context, docker *client.Client, image string) {
 	dockerfile := viper.GetString("dockerfile")
 
+	// Split the Dockerfile argument into path and dockerfile filename
+	dockerfileSplit := strings.Split(dockerfile, "/")
+	dockerfileName := dockerfileSplit[len(dockerfileSplit)-1]
+	dockerfileSplit = dockerfileSplit[:len(dockerfileSplit)-1]
+	dockerfilePath := strings.Join(dockerfileSplit, "/")
+
 	// Docker build config
+	log.Info(dockerfilePath, dockerfileName)
 	buildOpts := types.ImageBuildOptions{
-		Dockerfile: "Dockerfile",
+		Dockerfile: dockerfileName,
 		Tags:       []string{image},
 	}
 
@@ -60,7 +67,7 @@ func dockerBuild(ctx context.Context, docker *client.Client, image string) {
 	}
 
 	// Create docker context
-	buildCtx, err := archive.TarWithOptions(dockerfile, &archive.TarOptions{})
+	buildCtx, err := archive.TarWithOptions(dockerfilePath, &archive.TarOptions{})
 
 	if err != nil {
 		log.Fatalf("Failed to build docker context - %s", err)

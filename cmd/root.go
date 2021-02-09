@@ -37,7 +37,7 @@ func bindFlags(flags []string) {
 // Execute executes the root command.
 func Execute(version string) error {
 	rootCmd.Version = version
-	rootCmd.Flags().StringP("dockerfile", "d", ".", "Path to Dockerfile")
+	rootCmd.Flags().StringP("dockerfile", "d", "./Dockerfile", "Path to Dockerfile")
 	rootCmd.Flags().StringP("image", "i", "", "Existing docker image to pull down")
 	rootCmd.Flags().StringP("repo", "r", "", "ECR repo to create and push image to")
 	rootCmd.Flags().StringP("tag", "t", "latest", "Docker tag to build")
