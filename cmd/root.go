@@ -43,7 +43,7 @@ func Execute(version string) error {
 	rootCmd.Flags().StringP("tag", "t", "latest", "Docker tag to build")
 	rootCmd.Flags().StringSliceP("build_args", "b", []string{}, "List of docker build args")
 	rootCmd.Flags().BoolP("clean", "c", false, "Delete image from ECR if scan fails threshold")
-	rootCmd.Flags().BoolP("disable_scan", "s", false, "Disable scanning of image")
+	rootCmd.Flags().BoolP("disable_scan", "s", true, "Disable scanning of image")
 	rootCmd.Flags().StringSliceP("accounts", "a", []string{}, "List of AWS account ids to allow pulling images from")
 	rootCmd.Flags().IntVar(&undefined, "undefined", 100, "Acceptable threshold for UNDEFINED level results")
 	rootCmd.Flags().IntVar(&info, "info", 25, "Acceptable threshold for INFORMATIONAL level results")
