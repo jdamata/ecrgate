@@ -158,7 +158,7 @@ func getScanResults(svc *ecr.ECR, repo string, imageTag string) *ecr.DescribeIma
 
 	// Poll for scan results
 	for {
-		out, err := svc.DescribeImageScanFindings(&scanConfig)
+		_, err := svc.DescribeImageScanFindings(&scanConfig)
 		if err != nil {
 			if awsErr, ok := err.(awserr.Error); ok {
 				switch awsErr.Code() {
@@ -169,14 +169,15 @@ func getScanResults(svc *ecr.ECR, repo string, imageTag string) *ecr.DescribeIma
 				}
 			}
 		}
-		if *out.ImageScanStatus.Status == string("IN_PROGRESS") {
-			log.Info("Scan IN_PROGRESS")
-			sleepHelper(5)
-		} else if *out.ImageScanStatus.Status == string("FAILED") {
-			log.Fatalf("ECR scan failed - %s", *out.ImageScanStatus.Description)
-		} else if *out.ImageScanStatus.Status == string("COMPLETE") {
-			return out
-		}
+		sleepHelper(30)
+		// if *out.ImageScanStatus.Status == string("IN_PROGRESS") {
+		// 	log.Info("Scan IN_PROGRESS")
+		// 	sleepHelper(5)
+		// } else if *out.ImageScanStatus.Status == string("FAILED") {
+		// 	log.Fatalf("ECR scan failed - %s", *out.ImageScanStatus.Description)
+		// } else if *out.ImageScanStatus.Status == string("COMPLETE") {
+		// 	return out
+		// }
 	}
 }
 
